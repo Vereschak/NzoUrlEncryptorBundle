@@ -74,7 +74,7 @@ class UrlEncryptor
      * @param string $plainText
      * @return string
      */
-    public function encrypt($plainText, $iv)
+    public function encrypt($plainText, $iv = null)
     {
         if ($iv) {
             $this->iv = $iv;
