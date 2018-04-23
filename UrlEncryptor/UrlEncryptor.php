@@ -74,8 +74,11 @@ class UrlEncryptor
      * @param string $plainText
      * @return string
      */
-    public function encrypt($plainText)
+    public function encrypt($plainText, $iv)
     {
+        if ($iv) {
+            $this->iv = $iv;
+        }
         $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
 
         return $this->base64UrlEncode($encrypted);
@@ -83,6 +86,7 @@ class UrlEncryptor
 
     /**
      * @param string $encrypted
+     * @param null $iv
      * @return string
      */
     public function decrypt($encrypted, $iv = null)
