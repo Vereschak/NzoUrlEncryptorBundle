@@ -72,6 +72,7 @@ class UrlEncryptor
 
     /**
      * @param string $plainText
+     * @param null $iv
      * @return string
      */
     public function encrypt($plainText, $iv = null)
