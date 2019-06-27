@@ -79,14 +79,13 @@ class UrlEncryptor
      */
     public function encrypt($plainText, $iv = null)
     {
+        $i = $this->iv;
         if ($iv) {
-            $this->iv = $this->merge($this->iv, $iv);
+            $i = $this->merge($this->iv, $iv);
         }
-        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
-
+        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $i);
         return $this->base64UrlEncode($encrypted);
     }
-
     /**
      * @param string $encrypted
      * @param null $iv
@@ -94,17 +93,17 @@ class UrlEncryptor
      */
     public function decrypt($encrypted, $iv = null)
     {
+        $i = $this->iv;
         if ($iv) {
-            $this->iv = $this->merge($this->iv, $iv);
+            $i = $this->merge($this->iv, $iv);
         }
         $decrypted = openssl_decrypt(
             $this->base64UrlDecode($encrypted),
             $this->cipherAlgorithm,
             $this->secretKey,
             0,
-            $this->iv
+            $i
         );
-
         return trim($decrypted);
     }
 
