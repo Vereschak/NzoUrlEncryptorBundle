@@ -19,6 +19,8 @@ class UrlEncryptor
 {
     const CIPHER_ALGORITHM = 'aes-256-ctr';
     const HASH_ALGORITHM = 'sha256';
+    const LENGTH = 16;
+    const LENGTH_HALF = 8;
 
     /**
      * @var string
@@ -53,7 +55,7 @@ class UrlEncryptor
         }
 
         $this->secretKey = $secretKey;
-        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, 16);
+        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, self::LENGTH);
     }
 
     /**
@@ -64,10 +66,10 @@ class UrlEncryptor
     public function regenerateIV()
     {
         $strong = true;
-        $secretIv = bin2hex(openssl_random_pseudo_bytes(32, $strong));
-        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, 16);
+        $secretIv = bin2hex(openssl_random_pseudo_bytes(8, $strong));
+        $iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, self::LENGTH);
 
-        return $this->iv;
+        return  $iv;
     }
 
     /**
@@ -78,7 +80,7 @@ class UrlEncryptor
     public function encrypt($plainText, $iv = null)
     {
         if ($iv) {
-            $this->iv = $iv;
+            $this->iv = $this->merge($this->iv, $iv);
         }
         $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
 
@@ -93,7 +95,7 @@ class UrlEncryptor
     public function decrypt($encrypted, $iv = null)
     {
         if ($iv) {
-            $this->iv = $iv;
+            $this->iv = $this->merge($this->iv, $iv);
         }
         $decrypted = openssl_decrypt(
             $this->base64UrlDecode($encrypted),
@@ -122,5 +124,22 @@ class UrlEncryptor
     private function base64UrlDecode($data)
     {
         return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+    }
+
+    private function merge($str1, $str2){
+
+        // Split both strings
+        $str1 = str_split($str1, 1);
+        $str2 = str_split($str2, 1);
+
+        // Swap variables if string 1 is larger than string 2
+        if (count($str1) >= count($str2))
+            list($str1, $str2) = [$str2, $str1];
+
+        // Append the shorter string to the longer string
+        for($x=0; $x < count($str1); $x++)
+            $str2[$x] .= $str1[$x];
+
+        return substr(hash(self::HASH_ALGORITHM, implode('', $str2)) ,0, self::LENGTH);
     }
 }
