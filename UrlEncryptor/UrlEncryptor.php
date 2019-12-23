@@ -75,28 +75,41 @@ class UrlEncryptor
     /**
      * @param string $plainText
      * @param null $iv
+     * @param null $salt
      * @return string
      */
-    public function encrypt($plainText, $iv = null)
+    public function encrypt($plainText, $iv = null, $salt = null)
     {
         $i = $this->iv;
         if ($iv) {
             $i = $this->merge($this->iv, $iv);
         }
+
+        if ($salt) {
+            $i = substr(hash(self::HASH_ALGORITHM, $i.$salt), 0, self::LENGTH);
+        }
+
         $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $i);
         return $this->base64UrlEncode($encrypted);
     }
+
     /**
      * @param string $encrypted
      * @param null $iv
+     * @param null $salt
      * @return string
      */
-    public function decrypt($encrypted, $iv = null)
+    public function decrypt($encrypted, $iv = null, $salt = null)
     {
         $i = $this->iv;
         if ($iv) {
             $i = $this->merge($this->iv, $iv);
         }
+
+        if ($salt) {
+            $i = substr(hash(self::HASH_ALGORITHM, $i.$salt), 0, self::LENGTH);
+        }
+
         $decrypted = openssl_decrypt(
             $this->base64UrlDecode($encrypted),
             $this->cipherAlgorithm,
