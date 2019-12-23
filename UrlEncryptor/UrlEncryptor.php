@@ -78,7 +78,7 @@ class UrlEncryptor
      * @param null $salt
      * @return string
      */
-    public function encrypt($plainText, $iv = null, $salt = null)
+    public function encrypt($plainText, string $iv = null, string $salt = null)
     {
         $i = $this->iv;
         if ($iv) {
@@ -99,7 +99,7 @@ class UrlEncryptor
      * @param null $salt
      * @return string
      */
-    public function decrypt($encrypted, $iv = null, $salt = null)
+    public function decrypt($encrypted, string $iv = null, string $salt = null)
     {
         $i = $this->iv;
         if ($iv) {
